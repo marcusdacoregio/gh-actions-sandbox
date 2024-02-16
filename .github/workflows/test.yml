@@ -1,0 +1,15 @@
+name: Test
+
+on:
+  workflow_dispatch:
+
+env:
+  YES: "YES"
+
+jobs:
+  echo:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - name: Echo
+        run: echo "$YES"
