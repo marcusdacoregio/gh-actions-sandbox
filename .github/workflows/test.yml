@@ -15,3 +15,11 @@ jobs:
         run: echo "$YES"
       - name: Echo 2
         run: echo "${{ env.YES }}"
+  echo2:
+    name: Build 2
+    runs-on: ubuntu-latest
+    steps:
+      - name: Echo
+        run: echo "$YES"
+      - name: Echo 2
+        run: echo "${{ env.YES }}"
