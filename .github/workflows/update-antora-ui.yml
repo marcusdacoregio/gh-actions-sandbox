@@ -6,8 +6,7 @@ on:
 jobs:
   update:
     name: Build
-    uses: spring-io/spring-security-release-tools/.github/workflows/update-antora-ui-spring.yml@ceda8e8370ef9666975c2c689d309932cf0ab61d
+    uses: spring-io/spring-security-release-tools/.github/workflows/update-antora-ui-spring.yml@9d0e98600ea8ff2814e43aa984f7f9f6faf6a593
     with:
       docs-branch: 'main'
-    secrets:
-      token: ${{ secrets.GITHUB_TOKEN }}
+    secrets: inherit
