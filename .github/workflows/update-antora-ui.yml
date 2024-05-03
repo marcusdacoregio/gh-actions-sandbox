@@ -8,5 +8,6 @@ jobs:
     name: Build
     uses: spring-io/spring-security-release-tools/.github/workflows/update-antora-ui-spring.yml@ceda8e8370ef9666975c2c689d309932cf0ab61d
     with:
-      token: ${{ secrets.GITHUB_TOKEN }}
       docs-branch: 'main'
+    secrets:
+      token: ${{ secrets.GITHUB_TOKEN }}
