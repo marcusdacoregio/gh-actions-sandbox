@@ -8,7 +8,7 @@ permissions: write-all
 jobs:
   update:
     name: Build
-    uses: spring-io/spring-security-release-tools/.github/workflows/update-antora-ui-spring.yml@9d0e98600ea8ff2814e43aa984f7f9f6faf6a593
+    uses: spring-io/spring-security-release-tools/.github/workflows/update-antora-ui-spring.yml@a91f1a0c7f8fca5a9007a1dbf4e80c7c718c395f
     with:
       docs-branch: 'main'
     secrets: inherit
