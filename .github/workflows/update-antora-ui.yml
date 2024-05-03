@@ -1,4 +1,4 @@
-name: Update Antora UI
+name: Update Antora UI Spring
 
 on:
   workflow_dispatch:
@@ -6,9 +6,33 @@ on:
 permissions: write-all
 
 jobs:
-  update:
-    name: Build
-    uses: spring-io/spring-security-release-tools/.github/workflows/update-antora-ui-spring.yml@a91f1a0c7f8fca5a9007a1dbf4e80c7c718c395f
-    with:
-      docs-branch: 'main'
-    secrets: inherit
+  update-antora-ui-spring:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Get Current UI Bundle URL
+        uses: mikefarah/yq@v4.43.1
+        id: current
+        with:
+          cmd: yq '.ui.bundle.url' antora-playbook.yml
+      - name: Get Latest UI Bundle URL
+        id: latest
+        run: |
+          echo latest_ui_bundle_url=$(gh api /repos/spring-io/antora-ui-spring/releases/latest | jq -r '.assets[] | select(.name == "ui-bundle.zip") | .browser_download_url') >> $GITHUB_OUTPUT
+          echo tag_name=$(gh api /repos/spring-io/antora-ui-spring/releases/latest | jq -r '.tag_name') >> $GITHUB_OUTPUT
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Replace Current with Latest
+        id: replace
+        if: ${{ steps.current.outputs.result != steps.latest.outputs.latest_ui_bundle_url }}
+        run: |
+          sed -i 's@${{ steps.current.outputs.result }}@${{ steps.latest.outputs.latest_ui_bundle_url }}@g' antora-playbook.yml
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: Update Antora UI Spring to ${{ steps.latest.outputs.tag_name }}
+          commit-message: Update Antora UI Spring to ${{ steps.latest.outputs.tag_name }}
+          delete-branch: true
