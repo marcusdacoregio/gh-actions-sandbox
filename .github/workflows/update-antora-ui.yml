@@ -3,6 +3,8 @@ name: Update Antora UI
 on:
   workflow_dispatch:
 
+permissions: write-all
+
 jobs:
   update:
     name: Build
