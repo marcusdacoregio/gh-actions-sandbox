@@ -27,13 +27,16 @@ jobs:
         name: Check for Existing PR
         run: |
           pr_count=$(gh pr list --head ${{ inputs.workflow-branch }} --base ${{ inputs.docs-branch }} --state open --json id | jq length)
+          echo $pr_count
           if [[ $pr_count -eq 0 ]]; then
             echo "continue=true" >> $GITHUB_OUTPUT
+            echo "test=true" >> $GITHUB_OUTPUT
           fi
       - name: Delete Existing Branch If No PR Open
         if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
         run: |
           echo ${{ steps.check-existing-pr.outputs.continue }}
+          echo ${{ steps.check-existing-pr.outputs.test }}
           if git ls-remote --exit-code --heads origin "${{ inputs.workflow-branch }}" >/dev/null 2>&1; then
             git push -d origin ${{ inputs.workflow-branch }}
           fi
