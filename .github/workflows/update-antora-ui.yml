@@ -18,29 +18,18 @@ jobs:
   prerequisites:
     runs-on: ubuntu-latest
     outputs: 
-      continue: ${{ steps.check-existing-pr.outputs.result }}
+      continue: ${{ steps.check-existing-pr.outputs.continue }}
     steps:
       - uses: actions/checkout@v4
       - id: check-existing-pr
         name: Check for Existing PR
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { repo, owner } = context.repo;
-            const pulls = await github.rest.pulls.list({
-              owner: owner,
-              repo: repo,
-              head: '${{ inputs.workflow-branch }}',
-              base: '${{ inputs.docs-branch }}',
-              state: 'open',
-            });
-            console.log(pulls.data);
-            if (pulls.data.length < 1) {
-              return 'true';
-            }
-            return 'false';
+        run: |
+          pr_count=$(gh pr list --head '${{ inputs.workflow-branch }}' --base '${{ inputs.docs-branch }}' --state open --json id | jq length)
+          if [[ $pr_count -lt 1 ]]; then
+            echo continue=true >> $GITHUB_OUTPUT
+          fi
       - name: Delete Existing Branch If No PR Open
-        if: ${{ steps.check-existing-pr.outputs.result == 'true' }}
+        if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
         run: git push -d origin ${{ inputs.workflow-branch }}
   update-antora-ui-spring:
     runs-on: ubuntu-latest
