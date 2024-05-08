@@ -60,6 +60,10 @@ jobs:
         if: ${{ steps.current.outputs.current_ui_bundle_url != steps.latest.outputs.latest_ui_bundle_url }}
         run: |
           sed -i 's@${{ steps.current.outputs.current_ui_bundle_url }}@${{ steps.latest.outputs.latest_ui_bundle_url }}@g' antora-playbook.yml
+      - name: Setup Git User
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
       - name: Create Commit
         id: commit
         run: |
