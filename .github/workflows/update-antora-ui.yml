@@ -18,7 +18,7 @@ jobs:
   prerequisites:
     runs-on: ubuntu-latest
     outputs: 
-      continue: ${{ steps.check-existing-pr.outputs.continue }}
+      continue: ${{ steps.check-existing-pr.outputs.result }}
     steps:
       - uses: actions/checkout@v4
       - id: check-existing-pr
@@ -35,10 +35,11 @@ jobs:
               state: 'open',
             });
             if (pulls.data.length < 1) {
-              echo continue=true >> $GITHUB_OUTPUT
+              return "true";
             }
+            return "false";
       - name: Delete Existing Branch If No PR Open
-        if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
+        if: ${{ steps.check-existing-pr.outputs.result == 'true' }}
         run: git push -d origin ${{ inputs.workflow-branch }}
   update-antora-ui-spring:
     runs-on: ubuntu-latest
