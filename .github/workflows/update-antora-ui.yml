@@ -20,7 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Prerequisites
     outputs: 
-      continue: ${{ steps.check-existing-pr.outputs.continue }}
+      no-prs: ${{ steps.check-existing-pr.outputs.no-prs }}
     steps:
       - uses: actions/checkout@v4
       - id: check-existing-pr
@@ -28,10 +28,10 @@ jobs:
         run: |
           pr_count=$(gh pr list --head ${{ inputs.workflow-branch }} --base ${{ inputs.docs-branch }} --state open --json id | jq length)
           if [[ "$pr_count" -eq 0 ]]; then
-            echo "continue=true" >> $GITHUB_OUTPUT
+            echo "no-prs=true" >> $GITHUB_OUTPUT
           fi
       - name: Delete Existing Branch If No PR Open
-        if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
+        if: ${{ steps.check-existing-pr.outputs.no-prs == 'true' }}
         run: |
           if git ls-remote --exit-code --heads origin "${{ inputs.workflow-branch }}" >/dev/null 2>&1; then
             git push -d origin ${{ inputs.workflow-branch }}
@@ -41,7 +41,7 @@ jobs:
     name: Update Antora UI Spring
     needs:
       - prerequisites
-    if: ${{ needs.prerequisites.outputs.continue == 'true' }}
+    if: ${{ needs.prerequisites.outputs.no-prs == 'true' }}
     steps:
       - uses: actions/checkout@v4
         with:
