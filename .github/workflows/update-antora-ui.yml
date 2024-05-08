@@ -31,7 +31,10 @@ jobs:
           fi
       - name: Delete Existing Branch If No PR Open
         if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
-        run: git push -d origin ${{ inputs.workflow-branch }}
+        run: |
+          if git ls-remote --exit-code --heads origin "${{ inputs.workflow-branch }}" >/dev/null 2>&1; then
+            git push -d origin ${{ inputs.workflow-branch }}
+          fi
   update-antora-ui-spring:
     runs-on: ubuntu-latest
     needs:
