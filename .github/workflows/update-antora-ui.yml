@@ -30,8 +30,8 @@ jobs:
             const pulls = await github.rest.pulls.list({
               owner: owner,
               repo: repo,
-              head: ${{ inputs.workflow-branch }},
-              base: ${{ inputs.docs-branch }},
+              head: '${{ inputs.workflow-branch }}',
+              base: '${{ inputs.docs-branch }}',
               state: 'open',
             });
             if (pulls.data.length < 1) {
@@ -73,6 +73,7 @@ jobs:
             echo create_pr=true >> $GITHUB_OUTPUT
             git add antora-playbook.yml
             git commit -m "Update Antora Spring UI to ${{ steps.latest.outputs.tag_name }}"
+            git push origin '${{ inputs.workflow-branch }}'
           else
             echo create_pr=false >> $GITHUB_OUTPUT
           fi
@@ -89,6 +90,6 @@ jobs:
               title: 'Update Antora UI Spring to ${{ steps.latest.outputs.tag_name }}',
               owner: owner,
               repo: repo,
-              head: ${{ inputs.workflow-branch }},
-              base: ${{ inputs.docs-branch }},
+              head: '${{ inputs.workflow-branch }}',
+              base: '${{ inputs.docs-branch }}',
             });
