@@ -71,9 +71,10 @@ jobs:
         run: |
           if [ "$(git status --porcelain)" ]; then 
             echo create_pr=true >> $GITHUB_OUTPUT
+            git switch -c ${{ inputs.workflow-branch }}
             git add antora-playbook.yml
             git commit -m "Update Antora Spring UI to ${{ steps.latest.outputs.tag_name }}"
-            git push origin '${{ inputs.workflow-branch }}'
+            git push origin ${{ inputs.workflow-branch }}
           else
             echo create_pr=false >> $GITHUB_OUTPUT
           fi
