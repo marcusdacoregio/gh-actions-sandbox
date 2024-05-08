@@ -46,6 +46,7 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 1
+          ref: ${{ inputs.docs-branch }}
       - name: Get Current UI Bundle URL
         id: current
         run: echo current_ui_bundle_url=$(awk '/^ui:/{f=1; next} f && /^  bundle:/{f=2; next} f==2 && /^    url:/{print $2; exit}' antora-playbook.yml) >> $GITHUB_OUTPUT
