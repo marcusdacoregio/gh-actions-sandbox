@@ -34,10 +34,11 @@ jobs:
               base: '${{ inputs.docs-branch }}',
               state: 'open',
             });
+            console.log(pulls.data);
             if (pulls.data.length < 1) {
-              return "true";
+              return 'true';
             }
-            return "false";
+            return 'false';
       - name: Delete Existing Branch If No PR Open
         if: ${{ steps.check-existing-pr.outputs.result == 'true' }}
         run: git push -d origin ${{ inputs.workflow-branch }}
