@@ -11,7 +11,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Generate Docs
-        run: echo "hello" > docs/build/site/hello.txt
+        run: |
+          touch docs/build/site/hello.txt
+          echo "hello" > docs/build/site/hello.txt
       - name: Upload
         id: upload
         uses: actions/upload-artifact@v4
