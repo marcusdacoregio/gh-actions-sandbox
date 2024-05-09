@@ -1,6 +1,9 @@
 name: Generate Antora Docs
 
-on: pull_request
+on:
+  pull_request:
+    paths:
+      - docs/**
 
 permissions:
   pull-requests: write
