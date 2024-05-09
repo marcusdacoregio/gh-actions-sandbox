@@ -25,9 +25,10 @@ jobs:
       - uses: actions/checkout@v4
       - id: check-existing-pr
         name: Check for Existing PR
+        shell: bash
         run: |
           pr_count=$(gh pr list --head ${{ inputs.workflow-branch }} --base ${{ inputs.docs-branch }} --state open --json id | jq length)
-          if [[ "$pr_count" -eq 0 ]]; then
+          if [[ $pr_count -eq 0 ]]; then
             echo "continue=true" >> $GITHUB_OUTPUT
           fi
       - name: Delete Existing Branch If No PR Open
