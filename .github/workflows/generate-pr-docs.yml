@@ -1,0 +1,22 @@
+name: Generate Antora Docs
+
+on: pull_request
+
+permissions:
+  pull-requests: write
+
+jobs:
+  generate-and-upload:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate Docs
+        run: echo "hello" > docs/build/site/hello.txt
+      - name: Upload
+        id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs
+          path: docs/build/site/
+      - name: Comment on PR
+        run: gh pr comment ${{ github.event.pull_request.number }} --body "Documentation available at ${{ steps.upload.outputs.artifact-url }}"
