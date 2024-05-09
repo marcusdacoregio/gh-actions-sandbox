@@ -12,7 +12,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Generate Docs
         run: |
-          touch docs/build/site/hello.txt
           echo "hello" > docs/build/site/hello.txt
       - name: Upload
         id: upload
@@ -22,3 +21,5 @@ jobs:
           path: docs/build/site/
       - name: Comment on PR
         run: gh pr comment ${{ github.event.pull_request.number }} --body "Documentation available at ${{ steps.upload.outputs.artifact-url }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
