@@ -2,13 +2,6 @@ name: Update Antora UI Spring
 
 on:
   workflow_dispatch:
-    inputs:
-      docs-branch:
-        description: The branch used by Antora. Default is docs-build
-        default: 'main'
-      workflow-branch:
-        description: The branch that will be created by the workflow with the changes
-        default: 'update-antora-ui-spring'
 
 permissions:
   pull-requests: write
@@ -16,85 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  prerequisites:
-    runs-on: ubuntu-latest
-    name: Prerequisites
-    outputs: 
-      continue: ${{ steps.check-existing-pr.outputs.continue }}
-    steps:
-      - uses: actions/checkout@v4
-      - id: check-existing-pr
-        name: Check for Existing PR
-        shell: bash
-        run: |
-          pr_count=$(gh pr list --head ${{ inputs.workflow-branch }} --base ${{ inputs.docs-branch }} --state open --json id | jq length)
-          if [[ $pr_count -eq 0 ]]; then
-            echo "continue=true" >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Delete Existing Branch If No PR Open
-        if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
-        run: |
-          if git ls-remote --exit-code --heads origin "${{ inputs.workflow-branch }}" >/dev/null 2>&1; then
-            git push -d origin ${{ inputs.workflow-branch }}
-          fi
   update-antora-ui-spring:
     runs-on: ubuntu-latest
     name: Update Antora UI Spring
-    needs:
-      - prerequisites
-    if: ${{ needs.prerequisites.outputs.continue == 'true' }}
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-          ref: ${{ inputs.docs-branch }}
-      - name: Get Current UI Bundle URL
-        id: current
-        run: echo current_ui_bundle_url=$(awk '/^ui:/{f=1; next} f && /^  bundle:/{f=2; next} f==2 && /^    url:/{print $2; exit}' antora-playbook.yml) >> $GITHUB_OUTPUT
-      - name: Get Latest UI Bundle URL
-        id: latest
-        run: |
-          echo latest_ui_bundle_url=$(gh api /repos/spring-io/antora-ui-spring/releases/latest | jq -r '.assets[] | select(.name == "ui-bundle.zip") | .browser_download_url') >> $GITHUB_OUTPUT
-          echo tag_name=$(gh api /repos/spring-io/antora-ui-spring/releases/latest | jq -r '.tag_name') >> $GITHUB_OUTPUT
-        shell: bash
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Replace Current with Latest
-        id: replace
-        if: ${{ steps.current.outputs.current_ui_bundle_url != steps.latest.outputs.latest_ui_bundle_url }}
-        run: |
-          sed -i 's@${{ steps.current.outputs.current_ui_bundle_url }}@${{ steps.latest.outputs.latest_ui_bundle_url }}@g' antora-playbook.yml
-      - name: Setup Git User
-        run: |
-          git config --global user.name 'github-actions[bot]'
-          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
-      - name: Create Commit
-        id: commit
-        run: |
-          if [ "$(git status --porcelain)" ]; then 
-            echo create_pr=true >> $GITHUB_OUTPUT
-            git switch -c ${{ inputs.workflow-branch }}
-            git add antora-playbook.yml
-            git commit -m "Update Antora Spring UI to ${{ steps.latest.outputs.tag_name }}"
-            git push origin ${{ inputs.workflow-branch }}
-          else
-            echo create_pr=false >> $GITHUB_OUTPUT
-          fi
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Create Pull Request
-        if: ${{ steps.commit.outputs.create_pr == 'true' }}
-        id: pull_request
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const { repo, owner } = context.repo;
-            await github.rest.pulls.create({
-              title: 'Update Antora UI Spring to ${{ steps.latest.outputs.tag_name }}',
-              owner: owner,
-              repo: repo,
-              head: '${{ inputs.workflow-branch }}',
-              base: '${{ inputs.docs-branch }}',
-            });
+      - uses: ./.github/actions/action.yml
