@@ -14,7 +14,7 @@ jobs:
     name: Update Antora UI Spring
     steps:
       - uses: actions/checkout@v4
-      - uses: ./.github/actions/action.yml
+      - uses: marcusdacoregio/gh-actions-sandbox/.github/actions/action.yml@ccf4567435708c2b0c8687ae0df3016e424f1139
         with:
           docs-branch: 'main'
           token: ${{ secrets.GITHUB_TOKEN }}
