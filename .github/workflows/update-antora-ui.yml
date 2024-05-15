@@ -13,4 +13,8 @@ jobs:
     runs-on: ubuntu-latest
     name: Update Antora UI Spring
     steps:
+      - uses: actions/checkout@v4
       - uses: ./.github/actions/action.yml
+        with:
+          docs-branch: 'main'
+          token: ${{ secrets.GITHUB_TOKEN }}
