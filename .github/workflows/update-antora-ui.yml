@@ -29,3 +29,4 @@ jobs:
           docs-branch: ${{ matrix.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
           antora-file-path: 'antora/package.json'
+          workflow-branch-suffix: 'another-suffix'
