@@ -3,11 +3,14 @@ description: A GitHub Action that detects if there is a new version of the Antor
 
 inputs:
   docs-branch:
-    description: The branch where the antora-playbook.yml file is. Default is docs-build
+    description: The branch where the file containing the Antora UI Spring artifact is. Default is 'docs-build'
     default: 'docs-build'
-  workflow-branch:
-    description: The branch that will be created by the workflow with the changes. Default is update-antora-ui-spring
+  workflow-branch-suffix:
+    description: The suffix for the branch that will be created by the workflow with the changes, resolves to ${docs-branch}_${workflow-branch-suffix}. Default is update-antora-ui-spring
     default: 'update-antora-ui-spring'
+  antora-file-path:
+    description: Path to the Antora file containing the Antora UI Spring artifact. Default is 'antora-playbook.yml'.
+    default: 'antora-playbook.yml'
   token:
     description: Token with write permission to pull-requests, issues and contents
     required: true
@@ -16,10 +19,14 @@ runs:
   using: "composite"
   steps:
     - uses: actions/checkout@v4
+    - id: generate-branch-name
+      name: Generate Branch Name
+      run: echo "branch-name=${{ inputs.docs-branch }}_${{ inputs.workflow-branch-suffix }}" >> $GITHUB_OUTPUT
+      shell: bash
     - id: check-existing-pr
       name: Check for Existing PR
       run: |
-        pr_count=$(gh pr list --head ${{ inputs.workflow-branch }} --base ${{ inputs.docs-branch }} --state open --json id | jq length)
+        pr_count=$(gh pr list --head ${{ steps.generate-branch-name.outputs.branch-name }} --base ${{ inputs.docs-branch }} --state open --json id | jq length)
         if [[ $pr_count -eq 0 ]]; then
           echo "continue=true" >> $GITHUB_OUTPUT
         fi
@@ -29,14 +36,14 @@ runs:
     - name: Delete Existing Branch If No PR Open
       if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
       run: |
-        if git ls-remote --exit-code --heads origin "${{ inputs.workflow-branch }}" >/dev/null 2>&1; then
-          git push -d origin ${{ inputs.workflow-branch }}
+        if git ls-remote --exit-code --heads origin "${{ steps.generate-branch-name.outputs.branch-name }}" >/dev/null 2>&1; then
+          git push -d origin ${{ steps.generate-branch-name.outputs.branch-name }}
         fi
       shell: bash
     - name: Get Current UI Bundle URL
       id: current
       if: ${{ steps.check-existing-pr.outputs.continue == 'true' }}
-      run: echo current_ui_bundle_url=$(awk '/^ui:/{f=1; next} f && /^  bundle:/{f=2; next} f==2 && /^    url:/{print $2; exit}' antora-playbook.yml) >> $GITHUB_OUTPUT
+      run: echo current_ui_bundle_url=$(grep -oE 'http[s]?://[^ ]+/ui-bundle.zip' -i -w ${{ inputs.antora-file-path }}) >> $GITHUB_OUTPUT
       shell: bash
     - name: Get Latest UI Bundle URL
       id: latest
@@ -62,11 +69,11 @@ runs:
       id: commit
       run: |
         if [ "$(git status --porcelain)" ]; then 
-          echo create_pr=true >> $GITHUB_OUTPUT
-          git switch -c ${{ inputs.workflow-branch }}
-          git add antora-playbook.yml
+          git switch -c ${{ steps.generate-branch-name.outputs.branch-name }}
+          git add .
           git commit -m "Update Antora Spring UI to ${{ steps.latest.outputs.tag_name }}"
-          git push origin ${{ inputs.workflow-branch }}
+          git push origin ${{ steps.generate-branch-name.outputs.branch-name }}
+          echo create_pr=true >> $GITHUB_OUTPUT
         else
           echo create_pr=false >> $GITHUB_OUTPUT
         fi
@@ -82,7 +89,7 @@ runs:
             title: 'Update Antora UI Spring to ${{ steps.latest.outputs.tag_name }}',
             owner: owner,
             repo: repo,
-            head: '${{ inputs.workflow-branch }}',
+            head: '${{ steps.generate-branch-name.outputs.branch-name }}',
             base: '${{ inputs.docs-branch }}',
           });
 

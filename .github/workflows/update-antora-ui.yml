@@ -12,9 +12,20 @@ jobs:
   update-antora-ui-spring:
     runs-on: ubuntu-latest
     name: Update Antora UI Spring
+    strategy:
+      matrix:
+        branch: ['main', 'docs-build']
     steps:
       - uses: actions/checkout@v4
       - uses: ./update-antora-ui-spring-action
+        name: Update antora-playbook.yml
         with:
-          docs-branch: 'main'
+          docs-branch: ${{ matrix.branch }}
           token: ${{ secrets.GITHUB_TOKEN }}
+          antora-file-path: 'antora-playbook.yml'
+      - uses: ./update-antora-ui-spring-action
+        name: Update antora/package.json
+        with:
+          docs-branch: ${{ matrix.branch }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+          antora-file-path: 'antora/package.json'
