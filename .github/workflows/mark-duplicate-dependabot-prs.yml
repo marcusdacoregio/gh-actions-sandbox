@@ -27,6 +27,7 @@ jobs:
         id: find_duplicates
         env:
           DEPENDENCY_NAME: ${{ steps.extract.outputs.dependency_name }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PRS=$(gh pr list --search "milestone:${{ github.event.pull_request.milestone.title }} is:merged $DEPENDENCY_NAME" --json number --jq 'map(.number) | join(",")')
           echo "prs=$PRS" >> $GITHUB_OUTPUT
@@ -36,6 +37,7 @@ jobs:
         env:
           PRS: ${{ steps.find_duplicates.outputs.prs }}
           CURRENT_PR_NUMBER: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         shell: bash
         run: |
           for i in ${PRS//,/ }
