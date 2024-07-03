@@ -12,6 +12,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: Print
+        run: echo "${{ toJSON(github.event.pull_request) }}"
+
       - name: Extract Dependency Name from PR Title
         id: extract
         run: |
