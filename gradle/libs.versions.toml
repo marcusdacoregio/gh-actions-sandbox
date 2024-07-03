@@ -1,0 +1,3 @@
+[versions]
+
+org-springframework-data-spring-data-bom = "org.springframework.data:spring-data-bom:2024.0.0"
